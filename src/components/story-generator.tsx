@@ -6,30 +6,35 @@ import { Input } from '@/components/ui/input';
 import { Moon, Book, Wand2, Save, Library } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai'; // Import the Google Generative AI library
 
+interface Story {
+  id: number;
+  title: string;
+  content: string;
+  character: string;
+  theme: string;
+  date: string;
+}
+
+
 const StoryGenerator = () => {
   const [storySettings, setStorySettings] = useState({
     mainCharacter: '',
     age: '',
     theme: 'adventure',
-    duration: 'short',
     mood: 'happy'
   });
   
   const [generatedStory, setGeneratedStory] = useState('');
   const [audioURL, setAudioURL] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [savedStories, setSavedStories] = useState([]);
+  const [savedStories, setSavedStories] = useState<Story[]>([]);
   const [storyTitle, setStoryTitle] = useState('');
+  
+
 
   const themes = [
     'Adventure', 'Fantasy', 'Space', 'Animals', 
     'Friendship', 'Magic', 'Ocean'
-  ];
-
-  const durations = [
-    { label: 'Short (5 min)', value: 'short' },
-    { label: 'Medium (10 min)', value: 'medium' },
-    { label: 'Long (15 min)', value: 'long' }
   ];
 
   const moods = [
@@ -42,7 +47,7 @@ const StoryGenerator = () => {
   }, []);
 
   const generateStoryPrompt = () => {
-    return `Create a ${storySettings.duration} bedtime story for a ${storySettings.age} year old child. 
+    return `Create a bedtime story in 500 or less characters for a ${storySettings.age} year old child. 
     The main character is named ${storySettings.mainCharacter}. 
     The story should be ${storySettings.theme} themed and have a ${storySettings.mood} mood. 
     Make it engaging and end with a good moral lesson.`;
@@ -51,7 +56,8 @@ const StoryGenerator = () => {
   const generateStory = async () => {
     setIsLoading(true);
     try {
-      const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY); 
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
+      const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   
       const prompt = generateStoryPrompt();
@@ -126,6 +132,7 @@ const StoryGenerator = () => {
           <CardContent>
             <div className="space-y-4">
               <Input 
+                inputType="text"
                 placeholder="Main Character's Name"
                 value={storySettings.mainCharacter}
                 onChange={(e) => setStorySettings({
